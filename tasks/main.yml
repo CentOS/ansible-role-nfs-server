@@ -1,1 +1,89 @@
 # Defaults tasks for role nfs-server
+- name: Install nfs packages
+  yum:
+    name: ['nfs-utils', 'lvm2', 'rpcbind']
+    state: installed
+
+- name: Start and enable nfs-server services
+  service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  with_items:
+    - nfs-server
+    - rpcbind
+
+- name: Opening up nfs ports
+  template:
+    src: 01-input-service-policy-nfsd.j2
+    dest: /etc/sysconfig/iptables.d/01-input-service-policy-nfsd
+  notify:
+    - rebuild_iptables
+  tags:
+    - iptables
+
+- name: Ensuring we have exports directories
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    setype: public_content_rw_t
+  with_items:
+    - "{{ nfs_exports }}"
+  loop_control:
+    label: '{{ item.path }}'
+
+- name: Ensuring we have needed LVs if needed
+  lvol:
+    vg: "{{ item.vg_name }}"
+    lv: "{{ item.lv_name }}"
+    size: "{{ item.lv_size | default('1G') }}"
+  with_items:
+    - "{{ nfs_exports }}"
+  when: item.lv_init is defined and item.lv_init 
+  loop_control:
+    label: '{{ item.path }}'
+  tags:
+    - lvm
+
+- name: Filesystem on LVs
+  filesystem:
+    fstype: ext4
+    dev: "/dev/{{ item.vg_name }}/{{ item.lv_name }}"
+  with_items:
+    - "{{ nfs_exports }}"
+  when: item.lv_init is defined and item.lv_init 
+  loop_control:
+    label: '{{ item.path }}'
+  tags:
+    - lvm
+
+- name: Ensuring LVs are mounted
+  mount:
+    name: "{{ item.path }}"
+    src: "/dev/{{ item.vg_name }}/{{ item.lv_name }}"
+    fstype: ext4
+    state: mounted
+  with_items:
+    - "{{ nfs_exports }}"
+  when: item.lv_init is defined and item.lv_init 
+  loop_control:
+    label: '{{ item.path }}'
+  tags:
+    - lvm
+
+- name: Ensuring we have exports directories
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    setype: public_content_rw_t
+  with_items:
+    - "{{ nfs_exports }}"
+  loop_control:
+    label: '{{ item.path }}'
+
+- name: Configuring nfs exports
+  template:
+    src: exports.j2
+    dest: /etc/exports
+  notify:
+    - reload_exportfs

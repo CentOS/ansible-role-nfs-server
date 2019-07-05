@@ -1,1 +1,19 @@
 # Defaults variables for role nfs-server
+
+# These are the exported nfs shares
+# By default we'll only create directories on existing filesystem and export those
+# But we can also create a LV from a VG, then mount and export it
+# See export-2 example with lv_init, vg_name, lv_name and lv_size
+
+nfs_exports:
+  - path: /srv/export1
+    acls:
+      - 192.168.1.1(rw,no_root_squash)
+      - 172.22.0.0/24(ro,no_root_squash)
+  - path: /srv/export2
+    acls:
+      - 192.168.0.0/24(rw,no_root_squash)
+    lv_init: True
+    vg_name: vg_iscsi
+    lv_name: export2
+    lv_size: 2G

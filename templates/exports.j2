@@ -1,0 +1,5 @@
+# This file is managed by Ansible. Don't edit it
+{% for export in nfs_exports %}
+{{ export.path }} {% for acl in export.acls %}{{ acl }} {% endfor %}
+
+{% endfor %}
