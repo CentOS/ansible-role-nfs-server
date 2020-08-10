@@ -31,6 +31,8 @@
     - "{{ nfs_exports }}"
   loop_control:
     label: '{{ item.path }}'
+  tags:
+    - exports
 
 - name: Ensuring we have needed LVs if needed
   lvol:
@@ -44,6 +46,7 @@
     label: '{{ item.path }}'
   tags:
     - lvm
+    - exports
 
 - name: Filesystem on LVs
   filesystem:
@@ -56,6 +59,7 @@
     label: '{{ item.path }}'
   tags:
     - lvm
+    - exports
 
 - name: Ensuring LVs are mounted
   mount:
@@ -70,6 +74,7 @@
     label: '{{ item.path }}'
   tags:
     - lvm
+    - exports
 
 - name: Ensuring we have exports directories
   file:
@@ -80,6 +85,8 @@
     - "{{ nfs_exports }}"
   loop_control:
     label: '{{ item.path }}'
+  tags:
+    - exports
 
 - name: Configuring nfs exports
   template:
@@ -87,3 +94,6 @@
     dest: /etc/exports
   notify:
     - reload_exportfs
+  tags:
+    - exports
+    
