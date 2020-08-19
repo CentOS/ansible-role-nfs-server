@@ -51,6 +51,7 @@
 - name: Filesystem on LVs
   filesystem:
     fstype: ext4
+    resizefs: yes
     dev: "/dev/{{ item.vg_name }}/{{ item.lv_name }}"
   with_items:
     - "{{ nfs_exports }}"
