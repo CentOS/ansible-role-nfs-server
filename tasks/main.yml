@@ -34,45 +34,38 @@
   tags:
     - exports
 
-- name: Ensuring we have needed LVs if needed
-  lvol:
-    vg: "{{ item.vg_name }}"
-    lv: "{{ item.lv_name }}"
-    size: "{{ item.lv_size | default('1G') }}"
-  with_items:
-    - "{{ nfs_exports }}"
-  when: item.lv_init is defined and item.lv_init 
-  loop_control:
-    label: '{{ item.path }}'
-  tags:
-    - lvm
-    - exports
+- block:
+    - name: Ensuring we have needed LVs if needed
+      lvol:
+        vg: "{{ item.vg_name }}"
+        lv: "{{ item.lv_name }}"
+        size: "{{ item.lv_size | default('1G') }}"
+      with_items:
+        - "{{ nfs_exports }}"
+      loop_control:
+        label: '{{ item.path }}'
 
-- name: Filesystem on LVs
-  filesystem:
-    fstype: ext4
-    resizefs: yes
-    dev: "/dev/{{ item.vg_name }}/{{ item.lv_name }}"
-  with_items:
-    - "{{ nfs_exports }}"
-  when: item.lv_init is defined and item.lv_init 
-  loop_control:
-    label: '{{ item.path }}'
-  tags:
-    - lvm
-    - exports
+    - name: Filesystem on LVs
+      filesystem:
+        fstype: "{{ item.lv_fstype | default('ext4') }}"
+        resizefs: yes
+        dev: "/dev/{{ item.vg_name }}/{{ item.lv_name }}"
+      with_items:
+        - "{{ nfs_exports }}"
+      loop_control:
+        label: '{{ item.path }}'
 
-- name: Ensuring LVs are mounted
-  mount:
-    name: "{{ item.path }}"
-    src: "/dev/{{ item.vg_name }}/{{ item.lv_name }}"
-    fstype: ext4
-    state: mounted
-  with_items:
-    - "{{ nfs_exports }}"
+    - name: Ensuring LVs are mounted
+      mount:
+        name: "{{ item.path }}"
+        src: "/dev/{{ item.vg_name }}/{{ item.lv_name }}"
+        fstype: "{{ item.lv_fstype | default('ext4') }}"
+        state: mounted      
+      with_items:
+        - "{{ nfs_exports }}"
+      loop_control:
+        label: '{{ item.path }}'
   when: item.lv_init is defined and item.lv_init 
-  loop_control:
-    label: '{{ item.path }}'
   tags:
     - lvm
     - exports

@@ -4,16 +4,27 @@
 # By default we'll only create directories on existing filesystem and export those
 # But we can also create a LV from a VG, then mount and export it
 # See export-2 example with lv_init, vg_name, lv_name and lv_size
+# We'll also default to ext4 if lv_fstype isn't specified, see export-3
 
-nfs_exports:
-  - path: /srv/export1
-    acls:
-      - 192.168.1.1(rw,no_root_squash)
-      - 172.22.0.0/24(ro,no_root_squash)
-  - path: /srv/export2
-    acls:
-      - 192.168.0.0/24(rw,no_root_squash)
-    lv_init: True
-    vg_name: vg_iscsi
-    lv_name: export2
-    lv_size: 2G
+#nfs_exports:
+#  - path: /srv/export1
+#    acls:
+#      - 192.168.1.1(rw,no_root_squash)
+#      - 172.22.0.0/24(ro,no_root_squash)
+#  - path: /srv/export2
+#    acls:
+#      - 192.168.0.0/24(rw,no_root_squash)
+#    lv_init: True
+#    vg_name: vg_iscsi
+#    lv_name: export2
+#    lv_size: 2G 
+#  - path: /srv/export3
+#    acls:
+#      - 192.168.0.0/24(rw,no_root_squash)
+#    lv_init: True
+#    lv_fstype: xfs
+#    vg_name: vg_iscsi
+#    lv_name: export3
+#    lv_size: 2G
+
+nfs_exports: []
