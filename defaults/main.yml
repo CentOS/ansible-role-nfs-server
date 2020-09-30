@@ -28,3 +28,8 @@
 #    lv_size: 2G
 
 nfs_exports: []
+
+# For perf tuning
+# By default we'll force number of vcpus/cores * 8 (http://nfs.sourceforge.net/nfs-howto/ar01s05.html) to get number of available threads
+# Of course modify/adapt to your needs in case node is also use for iscsid or other tasks
+nfs_threads: "{{ ansible_processor_vcpus * 8 }}"

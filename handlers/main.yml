@@ -1,3 +1,8 @@
 # Defaults handlers for role nfs-server
 - name: reload_exportfs
   command: /usr/sbin/exportfs -ra
+
+- name: restart_nfsd
+  service:
+    name: nfs-server
+    state: restarted

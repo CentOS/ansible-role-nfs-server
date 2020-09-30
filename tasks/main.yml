@@ -4,6 +4,15 @@
     name: ['nfs-utils', 'lvm2', 'rpcbind']
     state: installed
 
+- name: Configuring default nfs.conf
+  template:
+    src: nfs.conf.j2
+    dest: /etc/nfs.conf
+    mode: 0644
+  notify: restart_nfsd
+  tags:
+    - config
+
 - name: Start and enable nfs-server services
   service:
     name: "{{ item }}"
